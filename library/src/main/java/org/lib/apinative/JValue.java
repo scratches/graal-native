@@ -1,4 +1,4 @@
-package org.pkg.apinative;
+package org.lib.apinative;
 
 import com.oracle.svm.jni.nativeapi.JNIHeaderDirectives;
 

@@ -1,4 +1,4 @@
-package org.pkg.apinative;
+package org.lib.apinative;
 
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
