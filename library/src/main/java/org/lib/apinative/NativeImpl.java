@@ -8,7 +8,7 @@ public final class NativeImpl {
 	@CEntryPoint(name = "Java_org_pkg_apinative_Native_createIsolate", builtin = CEntryPoint.Builtin.CreateIsolate)
 	public static native long createIsolate();
 
-	@CEntryPoint(name = "Java_org_pkg_apinative_Native_add")
+	@CEntryPoint(name = "Java_org_pkg_apinative_Native_add0")
 	static int add(JNIEnvironment env, JClass clazz,
 			@CEntryPoint.IsolateContext long isolateId, int a, int b) {
 		JNINativeInterface fn = env.getFunctions();

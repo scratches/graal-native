@@ -1,17 +1,24 @@
 package org.pkg.apinative;
 
 public final class Native {
-	public static void main(String[] args) {
+
+	private static long isolate;
+	static {
 		System.loadLibrary("nativeimpl");
-
-		long isolate = createIsolate();
-
-		System.out.println("2 + 40 = " + add(isolate, 2, 40));
-		System.out.println("12 + 30 = " + add(isolate, 12, 30));
-		System.out.println("20 + 22 = " + add(isolate, 20, 22));
+		isolate = createIsolate();
 	}
 
-	private static native int add(long isolate, int a, int b);
+	public static void main(String[] args) {
+		System.out.println("2 + 40 = " + add(2, 40));
+		System.out.println("12 + 30 = " + add(12, 30));
+		System.out.println("20 + 22 = " + add(20, 22));
+	}
+
+	public static int add(int a, int b) {
+		return add0(isolate, a, b);
+	}
+
+	private static native int add0(long isolate, int a, int b);
 
 	private static native long createIsolate();
 
