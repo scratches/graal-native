@@ -35,6 +35,9 @@ interface JValue extends PointerBase {
 	double d();
 
 	@CField
+	JObject l();
+
+	@CField
 	void z(boolean b);
 
 	@CField
@@ -57,6 +60,9 @@ interface JValue extends PointerBase {
 
 	@CField
 	void d(double d);
+
+	@CField
+	void l(JObject obj);
 
 	JValue addressOf(int index);
 }
