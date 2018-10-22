@@ -14,20 +14,20 @@ public final class Native {
 		System.out.println("2 + 40 = " + add(2, 40));
 		System.out.println("12 + 30 = " + add(12, 30));
 		System.out.println("20 + 22 = " + add(20, 22));
-		run(foo -> new Foo(foo.getValue().toUpperCase()), new Foo("foo"));
+		System.out.println(run(foo -> new Foo(foo.getValue().toUpperCase()), new Foo("foo")));
 	}
 
 	public static int add(int a, int b) {
 		return add0(isolate, a, b);
 	}
 
-	public static <T> void run(Function<T,T> function, T input) {
-		run0(isolate, function, input);
+	public static <T> T run(Function<T,T> function, T input) {
+		return run0(isolate, function, input);
 	}
 
 	private static native int add0(long isolate, int a, int b);
 
-	private static native int run0(long isolate, Function<?,?> function, Object foo);
+	private static native <T> T run0(long isolate, Function<?,?> function, Object foo);
 
 	private static native long createIsolate();
 

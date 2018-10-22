@@ -37,7 +37,7 @@ public final class NativeImpl {
 	}
 
 	@CEntryPoint(name = "Java_org_pkg_apinative_Native_run0")
-	static void run(JNIEnvironment env, JClass clazz,
+	static JObject run(JNIEnvironment env, JClass clazz,
 			@CEntryPoint.IsolateContext long isolateId, JObject function,
 			JObject object) {
 		JNINativeInterface fn = env.getFunctions();
@@ -45,19 +45,17 @@ public final class NativeImpl {
 				CTypeConversion.CCharPointerHolder sig = CTypeConversion
 						.toCString("(Ljava/lang/Object;)Ljava/lang/Object;");) {
 			JClass cls = fn.getGetObjectClass().find(env, function);
-			System.err.println("Finding method");
 			JMethodID apply = fn.getGetMethodID().find(env, cls, name.get(), sig.get());
 			JValue args = StackValue.get(1, JValue.class);
 			args.addressOf(0).l(object);
-			System.err.println("Running");
-			JObject call = fn.getCallObjectMethodA().call(env, function, apply, args);
-			System.err.println("Result: " + string(env, call));
+			System.err.println("Running: " + string(env, object));
+			JObject result = fn.getCallObjectMethodA().call(env, function, apply, args);
+			return result;
 		}
 	}
 
 	private static String string(JNIEnvironment env, JObject object) {
 		JNINativeInterface fn = env.getFunctions();
-		System.err.println("String");
 		try (CTypeConversion.CCharPointerHolder name = CTypeConversion
 				.toCString("toString");
 				CTypeConversion.CCharPointerHolder sig = CTypeConversion
