@@ -31,8 +31,8 @@
 			<version>1.0.0-rc8</version>
 		</dependency>
 		<dependency>
-			<groupId>com.oracle.graal</groupId>
-			<artifactId>graal-library-support</artifactId>
+			<groupId>com.oracle.substratevm</groupId>
+			<artifactId>library-support</artifactId>
 			<version>1.0.0-rc8</version>
 		</dependency>
 	</dependencies>
