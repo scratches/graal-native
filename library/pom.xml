@@ -26,14 +26,14 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.oracle.graal</groupId>
+			<groupId>org.graalvm.sdk</groupId>
 			<artifactId>graal-sdk</artifactId>
-			<version>1.0.0-rc7</version>
+			<version>1.0.0-rc8</version>
 		</dependency>
 		<dependency>
 			<groupId>com.oracle.graal</groupId>
 			<artifactId>graal-library-support</artifactId>
-			<version>1.0.0-rc7</version>
+			<version>1.0.0-rc8</version>
 		</dependency>
 	</dependencies>
 
