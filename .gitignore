@@ -1,3 +1,5 @@
+.attach_pid*
+hs_err_*
 *.h
 
 target/

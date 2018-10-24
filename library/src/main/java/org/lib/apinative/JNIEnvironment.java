@@ -44,11 +44,27 @@ interface JNINativeInterface extends PointerBase {
 	@CField
 	GetStringUTFChars getGetStringUTFChars();
 
+	@CField
+	GetStringUTFLength getGetStringUTFLength();
+
+	@CField
+	NewString getNewStringUTF();
+
+}
+
+interface NewString extends CFunctionPointer {
+	@InvokeCFunctionPointer
+	JString find(JNIEnvironment env, CCharPointer str);
+}
+
+interface GetStringUTFLength extends CFunctionPointer {
+	@InvokeCFunctionPointer
+	int find(JNIEnvironment env, JString object);
 }
 
 interface GetStringUTFChars extends CFunctionPointer {
 	@InvokeCFunctionPointer
-	CCharPointer find(JNIEnvironment env, JObject object);
+	CCharPointer find(JNIEnvironment env, JString object, boolean copy);
 }
 
 interface GetObjectClass extends CFunctionPointer {
@@ -67,6 +83,9 @@ interface GetMethodId extends CFunctionPointer {
 }
 
 interface JObject extends PointerBase {
+}
+
+interface JString extends JObject {
 }
 
 interface CallStaticVoidMethod extends CFunctionPointer {
