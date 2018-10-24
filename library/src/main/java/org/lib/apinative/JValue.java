@@ -1,7 +1,5 @@
 package org.lib.apinative;
 
-import com.oracle.svm.jni.nativeapi.JNIHeaderDirectives;
-
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.struct.CField;
 import org.graalvm.nativeimage.c.struct.CStruct;
