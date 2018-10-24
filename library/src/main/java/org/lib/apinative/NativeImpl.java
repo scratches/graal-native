@@ -16,10 +16,10 @@ public final class NativeImpl {
 			@CEntryPoint.IsolateContext long isolateId, JObject function) {
 		NativeImpl.env = env;
 		NativeImpl.function = function;
-		System.err.println(process(env, function, "foo"));
+		System.err.println(process("foo"));
 	}
 
-	public static String process(JNIEnvironment env, JObject function, String body) {
+	public static String process(String body) {
 		JNINativeInterface fn = env.getFunctions();
 		try (CTypeConversion.CCharPointerHolder name = CTypeConversion.toCString("apply");
 				CTypeConversion.CCharPointerHolder sig = CTypeConversion
