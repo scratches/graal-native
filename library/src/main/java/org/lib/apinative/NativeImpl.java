@@ -4,9 +4,21 @@ import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 
+import org.springframework.context.ConfigurableApplicationContext;
+
 public final class NativeImpl {
+
 	private static JObject function;
 	private static JNIEnvironment env;
+	private static ConfigurableApplicationContext context;
+
+	public static void main(String[] args) {
+		FunctionalSpringApplication application = new FunctionalSpringApplication(
+				Object.class);
+		application.addInitializers(
+				new FunctionEndpointInitializer(value -> value.toUpperCase()));
+		context = application.run(args);
+	}
 
 	@CEntryPoint(name = "Java_org_pkg_apinative_Native_createIsolate", builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
 	public static native long createIsolate();
@@ -16,7 +28,20 @@ public final class NativeImpl {
 			@CEntryPoint.IsolateThreadContext long threadId, JObject function) {
 		NativeImpl.env = env;
 		NativeImpl.function = function;
-		System.err.println(process("foo"));
+		FunctionalSpringApplication application = new FunctionalSpringApplication(
+				Object.class);
+		application.addInitializers(new FunctionEndpointInitializer(NativeImpl::process));
+		context = application.run();
+	}
+
+	@CEntryPoint(name = "Java_org_pkg_apinative_Native_close0")
+	static void close(JNIEnvironment env, JClass clazz,
+			@CEntryPoint.IsolateContext long isolateId,
+			@CEntryPoint.IsolateThreadContext long thread) {
+		if (context != null) {
+			context.close();
+			context = null;
+		}
 	}
 
 	public static String process(String body) {
