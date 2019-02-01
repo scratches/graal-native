@@ -8,12 +8,12 @@ public final class NativeImpl {
 	private static JObject function;
 	private static JNIEnvironment env;
 
-	@CEntryPoint(name = "Java_org_pkg_apinative_Native_createIsolate", builtin = CEntryPoint.Builtin.CreateIsolate)
+	@CEntryPoint(name = "Java_org_pkg_apinative_Native_createIsolate", builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
 	public static native long createIsolate();
 
 	@CEntryPoint(name = "Java_org_pkg_apinative_Native_run0")
 	static void run(JNIEnvironment env, JClass clazz,
-			@CEntryPoint.IsolateContext long isolateId, JObject function) {
+			@CEntryPoint.IsolateThreadContext long threadId, JObject function) {
 		NativeImpl.env = env;
 		NativeImpl.function = function;
 		System.err.println(process("foo"));
