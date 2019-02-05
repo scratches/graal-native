@@ -12,6 +12,11 @@ public final class Native {
 
 	public static void main(String[] args) {
 		run(foo -> foo.toUpperCase());
+		try {
+			Thread.sleep(600000L);
+		}
+		catch (InterruptedException e) {
+		}
 	}
 
 	public static void run(Function<String, String> function) {

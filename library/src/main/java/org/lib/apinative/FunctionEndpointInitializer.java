@@ -37,7 +37,6 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.ReactorHttpHandlerAdapter;
-import org.springframework.util.ClassUtils;
 import org.springframework.web.reactive.function.server.HandlerStrategies;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
@@ -126,11 +125,6 @@ class FunctionEndpointInitializer
 			ApplicationContext context = ((ContextRefreshedEvent) event)
 					.getApplicationContext();
 			if (context != this.context) {
-				return;
-			}
-			if (!ClassUtils.isPresent(
-					"org.springframework.http.server.reactive.HttpHandler", null)) {
-				logger.info("No web server classes found so no server to start");
 				return;
 			}
 			Integer port = Integer.valueOf(context.getEnvironment()

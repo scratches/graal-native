@@ -27,6 +27,15 @@
 		]
 	},
 	{
+		"name": "org.springframework.context.support.GenericApplicationContext",
+		"methods": [
+			{
+				"name": "<init>",
+				"parameterTypes": []
+			}
+		]
+	},
+	{
 		"name": "org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor",
 		"methods": [
 			{

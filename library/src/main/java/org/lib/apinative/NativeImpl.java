@@ -36,8 +36,7 @@ public final class NativeImpl {
 
 	@CEntryPoint(name = "Java_org_pkg_apinative_Native_close0")
 	static void close(JNIEnvironment env, JClass clazz,
-			@CEntryPoint.IsolateContext long isolateId,
-			@CEntryPoint.IsolateThreadContext long thread) {
+			@CEntryPoint.IsolateThreadContext long threadId) {
 		if (context != null) {
 			context.close();
 			context = null;
@@ -51,12 +50,18 @@ public final class NativeImpl {
 						.toCString("(Ljava/lang/Object;)Ljava/lang/Object;");
 				CTypeConversion.CCharPointerHolder input = CTypeConversion
 						.toCString(body);) {
+			System.err.println("1 " + name);
 			JClass cls = fn.getGetObjectClass().find(env, function);
+			System.err.println("2");
 			JMethodID apply = fn.getGetMethodID().find(env, cls, name.get(), sig.get());
+			System.err.println("3");
 			JValue args = StackValue.get(1, JValue.class);
+			System.err.println("4");
 			JString string = fn.getNewStringUTF().find(env, input.get());
 			args.addressOf(0).l(string);
+			System.err.println("5");
 			JObject result = fn.getCallObjectMethodA().call(env, function, apply, args);
+			System.err.println("6");
 			return CTypeConversion.toJavaString(
 					fn.getGetStringUTFChars().find(env, (JString) result, false));
 		}

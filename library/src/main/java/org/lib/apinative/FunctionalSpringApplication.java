@@ -25,7 +25,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
-import org.springframework.util.ClassUtils;
 
 /**
  * @author Dave Syer
@@ -60,19 +59,15 @@ public class FunctionalSpringApplication
 
 	public static ConfigurableApplicationContext run(Class<?>[] primarySources,
 			String[] args) {
-		return new FunctionalSpringApplication(primarySources).run(args);
+		ConfigurableApplicationContext context = new FunctionalSpringApplication(
+				primarySources).run(args);
+		return context;
 	}
 
 	public FunctionalSpringApplication(Class<?>... primarySources) {
 		super(primarySources);
 		setApplicationContextClass(GenericApplicationContext.class);
-		if (ClassUtils.isPresent("org.springframework.web.reactive.DispatcherHandler",
-				null)) {
-			setWebApplicationType(WebApplicationType.REACTIVE);
-		}
-		else {
-			setWebApplicationType(WebApplicationType.NONE);
-		}
+		setWebApplicationType(WebApplicationType.REACTIVE);
 	}
 
 	@Override
