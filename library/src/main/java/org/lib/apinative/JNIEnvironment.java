@@ -12,20 +12,25 @@ import org.graalvm.word.PointerBase;
 @CContext(JNIHeaderDirectives.class)
 @CStruct(value = "JNIEnv_", addStructKeyword = true)
 interface JNIEnvironment extends PointerBase {
+
 	@CField("functions")
 	JNINativeInterface getFunctions();
+
 }
 
 @CPointerTo(JNIEnvironment.class)
 interface JNIEnvironmentPointer extends PointerBase {
+
 	JNIEnvironment read();
 
 	void write(JNIEnvironment value);
+
 }
 
 @CContext(JNIHeaderDirectives.class)
 @CStruct(value = "JNINativeInterface_", addStructKeyword = true)
 interface JNINativeInterface extends PointerBase {
+
 	@CField
 	GetStaticMethodId getGetStaticMethodID();
 
@@ -50,56 +55,86 @@ interface JNINativeInterface extends PointerBase {
 	@CField
 	NewString getNewStringUTF();
 
+	@CField
+	NewGlobalRef getNewGlobalRef();
+
+}
+
+interface NewGlobalRef extends CFunctionPointer {
+
+	@InvokeCFunctionPointer
+	JObject find(JNIEnvironment env, JObject object);
+
 }
 
 interface NewString extends CFunctionPointer {
+
 	@InvokeCFunctionPointer
 	JString find(JNIEnvironment env, CCharPointer str);
+
 }
 
 interface GetStringUTFLength extends CFunctionPointer {
+
 	@InvokeCFunctionPointer
 	int find(JNIEnvironment env, JString object);
+
 }
 
 interface GetStringUTFChars extends CFunctionPointer {
+
 	@InvokeCFunctionPointer
 	CCharPointer find(JNIEnvironment env, JString object, boolean copy);
+
 }
 
 interface GetObjectClass extends CFunctionPointer {
+
 	@InvokeCFunctionPointer
 	JClass find(JNIEnvironment env, JObject object);
+
 }
 
 interface GetStaticMethodId extends CFunctionPointer {
+
 	@InvokeCFunctionPointer
 	JMethodID find(JNIEnvironment env, JClass clazz, CCharPointer name, CCharPointer sig);
+
 }
 
 interface GetMethodId extends CFunctionPointer {
+
 	@InvokeCFunctionPointer
 	JMethodID find(JNIEnvironment env, JClass clazz, CCharPointer name, CCharPointer sig);
+
 }
 
 interface JObject extends PointerBase {
+
 }
 
 interface JString extends JObject {
+
 }
 
 interface CallStaticVoidMethod extends CFunctionPointer {
+
 	@InvokeCFunctionPointer
 	void call(JNIEnvironment env, JClass cls, JMethodID methodid, JValue args);
+
 }
 
 interface CallObjectMethod extends CFunctionPointer {
+
 	@InvokeCFunctionPointer
 	JObject call(JNIEnvironment env, JObject obj, JMethodID methodid, JValue args);
+
 }
 
 interface JClass extends PointerBase {
+
 }
 
 interface JMethodID extends PointerBase {
+
 }
