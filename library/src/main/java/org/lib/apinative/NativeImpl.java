@@ -1,14 +1,11 @@
 package org.lib.apinative;
 
-import com.oracle.svm.core.c.function.CEntryPointActions;
-import com.oracle.svm.core.c.function.CEntryPointOptions;
 import org.graalvm.nativeimage.Isolate;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.Isolates;
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
-import org.graalvm.word.WordFactory;
 
 public final class NativeImpl {
 
@@ -21,29 +18,32 @@ public final class NativeImpl {
 		System.err.println(threadId.rawValue());
 		Isolate isolate = Isolates.getIsolate(threadId);
 		System.err.println(isolate.rawValue());
-		System.err.println(process(env, threadId, function, "foo"));
+		System.err.println(process(env, function, "foo"));
 		System.err.println(env.rawValue());
-		// Barf...
-		System.loadLibrary("nativeimpl");
+		JavaVMPointer pjvm = StackValue.get(1, JavaVMPointer.class);
+		env.getFunctions().getJavaVM().find(env, pjvm);
+		System.err.println("JVM: " + pjvm.rawValue());
 		long id = Isolates.getIsolate(threadId).rawValue();
 		System.err.println("SVM: " + id);
-		System.err.println(ownJNIEnv(id));
 		new Thread(() -> {
-			long raw = Isolates.getIsolate(threadId).rawValue();
-			System.err.println("SVM: " + id);
-			System.err.println("SVM: " + raw);
-			System.err.println(ownJNIEnv(id));
-			final JNIEnvironment fromEnv = WordFactory.pointer(ownJNIEnv(id));
-			IsolateThread current = Isolates.attachCurrentThread(isolate);
-			System.err.println(current.rawValue());
+			System.err.println("Thread, SVM: " + id);
+			JNIEnvironmentPointer pfromEnv = StackValue.get(1, JNIEnvironmentPointer.class);
+			JValue args = StackValue.get(1, JValue.class);
+			JavaVM jvm = pjvm.read();
+			jvm.getFunctions().attachCurrentThread().call(jvm, pfromEnv, args);
+			JNIEnvironment fromEnv = pfromEnv.read();
+			System.err.println("Thread, Env: " + fromEnv.rawValue());
 			try {
-				System.err.println(process(fromEnv, threadId, function, "bar"));
+				System.err.println("Result: " + process(fromEnv, function, "bar"));
 			}
 			catch (Throwable t) {
 				t.printStackTrace();
 			}
 			finally {
-				Isolates.detachThread(current);
+				System.err.println("Thread, clean");
+				jvm.getFunctions().detachCurrentThread().call(jvm);
+				System.err.println("Thread, detached");
+				System.err.println("Thread, done");
 			}
 		}).start();
 		try {
@@ -54,7 +54,7 @@ public final class NativeImpl {
 		}
 	}
 
-	public static String process(JNIEnvironment env, IsolateThread threadId, JObject function, String body) {
+	public static String process(JNIEnvironment env, JObject function, String body) {
 		if (env.isNull()) {
 			System.err.println("Null JNIEnvironment");
 			return body;
@@ -92,37 +92,5 @@ public final class NativeImpl {
 			return CTypeConversion.toJavaString(fn.getGetStringUTFChars().find(env, (JString) result, false));
 		}
 	}
-
-	@CEntryPoint(name = "Java_org_lib_apinative_SVM_svmInit", builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
-	public static native long svmInit();
-
-	public static final class AttachThreadPrologue {
-
-		static void enter(@CEntryPoint.IsolateThreadContext long id) {
-			Isolate isolate = WordFactory.pointer(id);
-			int code = CEntryPointActions.enterAttachThread(isolate);
-			if (code != 0) {
-				CEntryPointActions.bailoutInPrologue();
-			}
-		}
-
-	}
-
-	@CEntryPointOptions(prologue = AttachThreadPrologue.class)
-	@CEntryPoint(name = "Java_org_lib_apinative_NativeImpl_ownJNIEnv")
-	static long ownJNIEnvImpl(JNIEnvironment env, JClass clazz, @CEntryPoint.IsolateThreadContext long isolateId) {
-		return env.rawValue();
-	}
-
-	private static native long ownJNIEnv(long isolateId);
-
-	@CEntryPoint(name = "Java_org_lib_apinative_NativeImpl_objPointer")
-	static long objPointerImpl(JNIEnvironment env, JClass clazz, @CEntryPoint.IsolateThreadContext long isolateId,
-			JObject obj) {
-		JObject global = env.getFunctions().getNewGlobalRef().find(env, obj);
-		return global.rawValue();
-	}
-
-	private static native long objPointer(long isolateId, Object obj);
 
 }

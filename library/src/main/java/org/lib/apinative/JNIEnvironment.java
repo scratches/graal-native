@@ -18,12 +18,42 @@ interface JNIEnvironment extends PointerBase {
 
 }
 
+@CContext(JNIHeaderDirectives.class)
+@CStruct(value = "JavaVM_", addStructKeyword = true)
+interface JavaVM extends PointerBase {
+
+	@CField("functions")
+	JNIInvokeInterface getFunctions();
+
+}
+
+@CContext(JNIHeaderDirectives.class)
+@CStruct(value = "JNIInvokeInterface_", addStructKeyword = true)
+interface JNIInvokeInterface extends PointerBase {
+
+	@CField("AttachCurrentThread")
+	AttachCurrentThread attachCurrentThread();
+
+	@CField("DetachCurrentThread")
+	DetachCurrentThread detachCurrentThread();
+
+}
+
 @CPointerTo(JNIEnvironment.class)
 interface JNIEnvironmentPointer extends PointerBase {
 
 	JNIEnvironment read();
 
 	void write(JNIEnvironment value);
+
+}
+
+@CPointerTo(JavaVM.class)
+interface JavaVMPointer extends PointerBase {
+
+	JavaVM read();
+
+	void write(JavaVM value);
 
 }
 
@@ -57,6 +87,9 @@ interface JNINativeInterface extends PointerBase {
 
 	@CField
 	NewGlobalRef getNewGlobalRef();
+
+	@CField("GetJavaVM")
+	GetJavaVM getJavaVM();
 
 }
 
@@ -109,6 +142,13 @@ interface GetMethodId extends CFunctionPointer {
 
 }
 
+interface GetJavaVM extends CFunctionPointer {
+
+	@InvokeCFunctionPointer
+	int find(JNIEnvironment env, JavaVMPointer jvm);
+
+}
+
 interface JObject extends PointerBase {
 
 }
@@ -128,6 +168,20 @@ interface CallObjectMethod extends CFunctionPointer {
 
 	@InvokeCFunctionPointer
 	JObject call(JNIEnvironment env, JObject obj, JMethodID methodid, JValue args);
+
+}
+
+interface AttachCurrentThread extends CFunctionPointer {
+
+	@InvokeCFunctionPointer
+	int call(JavaVM vm, PointerBase penv, JValue args);
+
+}
+
+interface DetachCurrentThread extends CFunctionPointer {
+
+	@InvokeCFunctionPointer
+	int call(JavaVM vm);
 
 }
 
