@@ -1,8 +1,6 @@
 package org.lib.apinative;
 
-import org.graalvm.nativeimage.Isolate;
 import org.graalvm.nativeimage.IsolateThread;
-import org.graalvm.nativeimage.Isolates;
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
@@ -15,23 +13,12 @@ public final class NativeImpl {
 	@CEntryPoint(name = "Java_org_pkg_apinative_Native_run0")
 	static void run(JNIEnvironment env, JClass clazz, @CEntryPoint.IsolateThreadContext IsolateThread threadId,
 			JObject function) {
-		System.err.println(threadId.rawValue());
-		Isolate isolate = Isolates.getIsolate(threadId);
-		System.err.println(isolate.rawValue());
 		System.err.println(process(env, function, "foo"));
 		System.err.println(env.rawValue());
-		JavaVMPointer pjvm = StackValue.get(1, JavaVMPointer.class);
-		env.getFunctions().getJavaVM().find(env, pjvm);
-		System.err.println("JVM: " + pjvm.rawValue());
-		long id = Isolates.getIsolate(threadId).rawValue();
-		System.err.println("SVM: " + id);
+		JavaVM jvm = javaVM(env);
+		System.err.println("JVM: " + jvm.rawValue());
 		new Thread(() -> {
-			System.err.println("Thread, SVM: " + id);
-			JNIEnvironmentPointer pfromEnv = StackValue.get(1, JNIEnvironmentPointer.class);
-			JValue args = StackValue.get(1, JValue.class);
-			JavaVM jvm = pjvm.read();
-			jvm.getFunctions().attachCurrentThread().call(jvm, pfromEnv, args);
-			JNIEnvironment fromEnv = pfromEnv.read();
+			JNIEnvironment fromEnv = fromEnv(jvm);
 			System.err.println("Thread, Env: " + fromEnv.rawValue());
 			try {
 				System.err.println("Result: " + process(fromEnv, function, "bar"));
@@ -42,16 +29,32 @@ public final class NativeImpl {
 			finally {
 				System.err.println("Thread, clean");
 				jvm.getFunctions().detachCurrentThread().call(jvm);
-				System.err.println("Thread, detached");
 				System.err.println("Thread, done");
 			}
 		}).start();
 		try {
+			System.err.println("Sleeping");
 			Thread.sleep(1000L);
+			System.err.println("Done");
 		}
 		catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
+	}
+
+	private static JNIEnvironment fromEnv(JavaVM jvm) {
+		JNIEnvironmentPointer pfromEnv = StackValue.get(1, JNIEnvironmentPointer.class);
+		JValue args = StackValue.get(1, JValue.class);
+		jvm.getFunctions().attachCurrentThread().call(jvm, pfromEnv, args);
+		JNIEnvironment fromEnv = pfromEnv.read();
+		return fromEnv;
+	}
+
+	private static JavaVM javaVM(JNIEnvironment env) {
+		JavaVMPointer pjvm = StackValue.get(1, JavaVMPointer.class);
+		env.getFunctions().getJavaVM().find(env, pjvm);
+		JavaVM jvm = pjvm.read();
+		return jvm;
 	}
 
 	public static String process(JNIEnvironment env, JObject function, String body) {
