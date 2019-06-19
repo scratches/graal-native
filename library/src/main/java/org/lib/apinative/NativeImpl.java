@@ -9,34 +9,33 @@ import org.springframework.context.ConfigurableApplicationContext;
 public final class NativeImpl {
 
 	private static JObject function;
+
 	private static JNIEnvironment env;
+
 	private static ConfigurableApplicationContext context;
 
 	public static void main(String[] args) {
-		FunctionalSpringApplication application = new FunctionalSpringApplication(
-				Object.class);
-		application.addInitializers(
-				new FunctionEndpointInitializer(value -> value.toUpperCase()));
+		FunctionalSpringApplication application = new FunctionalSpringApplication(Object.class);
+		application.addInitializers(new FunctionEndpointInitializer(value -> value.toUpperCase()));
 		context = application.run(args);
 	}
 
-	@CEntryPoint(name = "Java_org_pkg_apinative_Native_createIsolate", builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
+	@CEntryPoint(name = "Java_org_pkg_apinative_FunctionRunner_createIsolate",
+			builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
 	public static native long createIsolate();
 
-	@CEntryPoint(name = "Java_org_pkg_apinative_Native_run0")
-	static void run(JNIEnvironment env, JClass clazz,
-			@CEntryPoint.IsolateThreadContext long threadId, JObject function) {
+	@CEntryPoint(name = "Java_org_pkg_apinative_FunctionRunner_run0")
+	static void run(JNIEnvironment env, JClass clazz, @CEntryPoint.IsolateThreadContext long threadId,
+			JObject function) {
 		NativeImpl.env = env;
-		NativeImpl.function = function;
-		FunctionalSpringApplication application = new FunctionalSpringApplication(
-				Object.class);
+		NativeImpl.function = env.getFunctions().getNewGlobalRef().find(env, function);
+		FunctionalSpringApplication application = new FunctionalSpringApplication(Object.class);
 		application.addInitializers(new FunctionEndpointInitializer(NativeImpl::process));
 		context = application.run();
 	}
 
-	@CEntryPoint(name = "Java_org_pkg_apinative_Native_close0")
-	static void close(JNIEnvironment env, JClass clazz,
-			@CEntryPoint.IsolateThreadContext long threadId) {
+	@CEntryPoint(name = "Java_org_pkg_apinative_FunctionRunner_close0")
+	static void close(JNIEnvironment env, JClass clazz, @CEntryPoint.IsolateThreadContext long threadId) {
 		if (context != null) {
 			context.close();
 			context = null;
@@ -44,27 +43,40 @@ public final class NativeImpl {
 	}
 
 	public static String process(String body) {
-		JNINativeInterface fn = env.getFunctions();
+		JavaVM jvm = javaVM(env);
+		System.err.println("Processing: " + body);
+		JNIEnvironment fromEnv = fromEnv(jvm);
 		try (CTypeConversion.CCharPointerHolder name = CTypeConversion.toCString("apply");
 				CTypeConversion.CCharPointerHolder sig = CTypeConversion
 						.toCString("(Ljava/lang/Object;)Ljava/lang/Object;");
-				CTypeConversion.CCharPointerHolder input = CTypeConversion
-						.toCString(body);) {
-			System.err.println("1 " + name);
-			JClass cls = fn.getGetObjectClass().find(env, function);
-			System.err.println("2");
-			JMethodID apply = fn.getGetMethodID().find(env, cls, name.get(), sig.get());
-			System.err.println("3");
+				CTypeConversion.CCharPointerHolder input = CTypeConversion.toCString(body);) {
+			JNINativeInterface fn = fromEnv.getFunctions();
+			JClass cls = fn.getGetObjectClass().find(fromEnv, function);
+			JMethodID apply = fn.getGetMethodID().find(fromEnv, cls, name.get(), sig.get());
 			JValue args = StackValue.get(1, JValue.class);
-			System.err.println("4");
-			JString string = fn.getNewStringUTF().find(env, input.get());
+			JString string = fn.getNewStringUTF().find(fromEnv, input.get());
 			args.addressOf(0).l(string);
-			System.err.println("5");
-			JObject result = fn.getCallObjectMethodA().call(env, function, apply, args);
-			System.err.println("6");
-			return CTypeConversion.toJavaString(
-					fn.getGetStringUTFChars().find(env, (JString) result, false));
+			JObject result = fn.getCallObjectMethodA().call(fromEnv, function, apply, args);
+			return CTypeConversion.toJavaString(fn.getGetStringUTFChars().find(fromEnv, (JString) result, false));
 		}
+		finally {
+			jvm.getFunctions().detachCurrentThread().call(jvm);
+		}
+	}
+
+	private static JNIEnvironment fromEnv(JavaVM jvm) {
+		JNIEnvironmentPointer pfromEnv = StackValue.get(1, JNIEnvironmentPointer.class);
+		JValue args = StackValue.get(1, JValue.class);
+		jvm.getFunctions().attachCurrentThread().call(jvm, pfromEnv, args);
+		JNIEnvironment fromEnv = pfromEnv.read();
+		return fromEnv;
+	}
+
+	private static JavaVM javaVM(JNIEnvironment env) {
+		JavaVMPointer pjvm = StackValue.get(1, JavaVMPointer.class);
+		env.getFunctions().getJavaVM().find(env, pjvm);
+		JavaVM jvm = pjvm.read();
+		return jvm;
 	}
 
 }

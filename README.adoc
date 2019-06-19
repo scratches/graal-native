@@ -1,6 +1,7 @@
 ```
 $ mvn clean install
 $ mkdir target
-$ native-image --shared -H:Name=target/libnativeimpl -cp library/target/native-library-0.0.1-SNAPSHOT.jar
+$ CP=`java -jar $HOME/.m2/repository/org/springframework/boot/experimental/spring-boot-thin-launcher/1.0.22.RELEASE/spring-boot-thin-launcher-1.0.22.RELEASE-exec.jar --thin.archive=library/target/native-library-0.0.1-SNAPSHOT.jar --thin.classpath`
+$ native-image -Dio.netty.noUnsafe=true -H:+ReportExceptionStackTraces --no-fallback --allow-incomplete-classpath --report-unsupported-elements-at-runtime  --shared -H:Name=target/libnativeimpl -cp $HOME/.m2/repository/org/springframework/spring-boot-graal-feature/0.5.0.BUILD-SNAPSHOT/spring-boot-graal-feature-0.5.0.BUILD-SNAPSHOT.jar:$CP 
 $ LD_LIBRARY_PATH=./target java -cp caller/target/native-caller-0.0.1-SNAPSHOT.jar org.pkg.apinative.Native
 ```
