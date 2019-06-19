@@ -35,10 +35,6 @@
 			<artifactId>spring-boot-starter-webflux</artifactId>
 			<exclusions>
 				<exclusion>
-					<groupId>org.hibernate.validator</groupId>
-					<artifactId>hibernate-validator</artifactId>
-				</exclusion>
-				<exclusion>
 					<groupId>io.netty</groupId>
 					<artifactId>netty-transport-native-epoll</artifactId>
 				</exclusion>
@@ -50,11 +46,15 @@
 					<groupId>io.netty</groupId>
 					<artifactId>netty-codec-http2</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.hibernate.validator</groupId>
+					<artifactId>hibernate-validator</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>jakarta.validation</groupId>
+					<artifactId>jakarta.validation-api</artifactId>
+				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjweaver</artifactId>
 		</dependency>
 	</dependencies>
 

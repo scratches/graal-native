@@ -66,7 +66,7 @@ public final class NativeImpl {
 
 	private static JNIEnvironment fromEnv(JavaVM jvm) {
 		JNIEnvironmentPointer pfromEnv = StackValue.get(1, JNIEnvironmentPointer.class);
-		JValue args = StackValue.get(1, JValue.class);
+		JValue args = StackValue.get(0, JValue.class);
 		jvm.getFunctions().attachCurrentThread().call(jvm, pfromEnv, args);
 		JNIEnvironment fromEnv = pfromEnv.read();
 		return fromEnv;
