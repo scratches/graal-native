@@ -30,8 +30,7 @@ import org.springframework.core.env.MutablePropertySources;
  * @author Dave Syer
  *
  */
-public class FunctionalSpringApplication
-		extends org.springframework.boot.SpringApplication {
+public class FunctionalSpringApplication extends org.springframework.boot.SpringApplication {
 
 	/**
 	 * Name of default property source.
@@ -52,15 +51,12 @@ public class FunctionalSpringApplication
 		FunctionalSpringApplication.run(new Class<?>[0], args);
 	}
 
-	public static ConfigurableApplicationContext run(Class<?> primarySource,
-			String... args) {
+	public static ConfigurableApplicationContext run(Class<?> primarySource, String... args) {
 		return run(new Class<?>[] { primarySource }, args);
 	}
 
-	public static ConfigurableApplicationContext run(Class<?>[] primarySources,
-			String[] args) {
-		ConfigurableApplicationContext context = new FunctionalSpringApplication(
-				primarySources).run(args);
+	public static ConfigurableApplicationContext run(Class<?>[] primarySources, String[] args) {
+		ConfigurableApplicationContext context = new FunctionalSpringApplication(primarySources).run(args);
 		return context;
 	}
 
@@ -78,8 +74,7 @@ public class FunctionalSpringApplication
 
 	@Override
 	protected void load(ApplicationContext context, Object[] sources) {
-		if (!context.getEnvironment().getProperty(SPRING_FUNCTIONAL_ENABLED,
-				Boolean.class, false)) {
+		if (!context.getEnvironment().getProperty(SPRING_FUNCTIONAL_ENABLED, Boolean.class, false)) {
 			super.load(context, sources);
 		}
 	}
@@ -87,17 +82,14 @@ public class FunctionalSpringApplication
 	private void defaultProperties(ConfigurableApplicationContext context) {
 		MutablePropertySources sources = context.getEnvironment().getPropertySources();
 		if (!sources.contains(DEFAULT_PROPERTIES)) {
-			sources.addLast(
-					new MapPropertySource(DEFAULT_PROPERTIES, Collections.emptyMap()));
+			sources.addLast(new MapPropertySource(DEFAULT_PROPERTIES, Collections.emptyMap()));
 		}
 		@SuppressWarnings("unchecked")
-		Map<String, Object> source = (Map<String, Object>) sources.get(DEFAULT_PROPERTIES)
-				.getSource();
+		Map<String, Object> source = (Map<String, Object>) sources.get(DEFAULT_PROPERTIES).getSource();
 		Map<String, Object> map = new HashMap<>(source);
 		map.put(SPRING_FUNCTIONAL_ENABLED, "true");
 		map.put(SPRING_WEB_APPLICATION_TYPE, getWebApplicationType());
-		sources.replace(DEFAULT_PROPERTIES,
-				new MapPropertySource(DEFAULT_PROPERTIES, map));
+		sources.replace(DEFAULT_PROPERTIES, new MapPropertySource(DEFAULT_PROPERTIES, map));
 	}
 
 }
