@@ -58,9 +58,9 @@ class FunctionEndpointInitializer implements ApplicationContextInitializer<Gener
 
 	private static long t0 = System.currentTimeMillis();
 
-	private Function<String, String> function;
+	private Function<byte[], byte[]> function;
 
-	public FunctionEndpointInitializer(Function<String, String> function) {
+	public FunctionEndpointInitializer(Function<byte[], byte[]> function) {
 		this.function = function;
 	}
 
@@ -148,14 +148,14 @@ class FunctionEndpointInitializer implements ApplicationContextInitializer<Gener
 
 class FunctionEndpointFactory {
 
-	private Function<String, String> function;
+	private Function<byte[], byte[]> function;
 
-	public FunctionEndpointFactory(Function<String, String> function) {
+	public FunctionEndpointFactory(Function<byte[], byte[]> function) {
 		this.function = function;
 	}
 
 	public <T> RouterFunction<?> functionEndpoints() {
-		return route(POST("/"), request -> ok().body(request.bodyToMono(String.class).map(function), String.class));
+		return route(POST("/"), request -> ok().body(request.bodyToMono(byte[].class).map(function), byte[].class));
 	}
 
 }

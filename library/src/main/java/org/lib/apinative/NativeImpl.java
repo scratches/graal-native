@@ -3,6 +3,7 @@ package org.lib.apinative;
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
+import org.graalvm.word.Pointer;
 
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -15,53 +16,80 @@ public final class NativeImpl {
 	private static ConfigurableApplicationContext context;
 
 	public static void main(String[] args) {
-		FunctionalSpringApplication application = new FunctionalSpringApplication(Object.class);
-		application.addInitializers(new FunctionEndpointInitializer(value -> value.toUpperCase()));
+		FunctionalSpringApplication application = new FunctionalSpringApplication(
+				Object.class);
+		application.addInitializers(new FunctionEndpointInitializer(
+				value -> new String(value).toUpperCase().getBytes()));
 		context = application.run(args);
 	}
 
-	@CEntryPoint(name = "Java_org_pkg_apinative_FunctionRunner_createIsolate",
-			builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
+	@CEntryPoint(name = "Java_org_pkg_apinative_FunctionRunner_createIsolate", builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
 	public static native long createIsolate();
 
 	@CEntryPoint(name = "Java_org_pkg_apinative_FunctionRunner_run0")
-	static void run(JNIEnvironment env, JClass clazz, @CEntryPoint.IsolateThreadContext long threadId,
-			JObject function) {
+	static void run(JNIEnvironment env, JClass clazz,
+			@CEntryPoint.IsolateThreadContext long threadId, JObject function) {
 		NativeImpl.env = env;
 		NativeImpl.function = env.getFunctions().getNewGlobalRef().find(env, function);
-		FunctionalSpringApplication application = new FunctionalSpringApplication(Object.class);
+		FunctionalSpringApplication application = new FunctionalSpringApplication(
+				Object.class);
 		application.addInitializers(new FunctionEndpointInitializer(NativeImpl::process));
 		context = application.run();
 	}
 
 	@CEntryPoint(name = "Java_org_pkg_apinative_FunctionRunner_close0")
-	static void close(JNIEnvironment env, JClass clazz, @CEntryPoint.IsolateThreadContext long threadId) {
+	static void close(JNIEnvironment env, JClass clazz,
+			@CEntryPoint.IsolateThreadContext long threadId) {
 		if (context != null) {
 			context.close();
 			context = null;
 		}
 	}
 
-	public static String process(String body) {
+	public static byte[] process(byte[] body) {
 		JavaVM jvm = javaVM(env);
-		System.err.println("Processing: " + body);
+		System.err.println("Processing: " + body.length + " bytes");
 		JNIEnvironment fromEnv = fromEnv(jvm);
+		JNINativeInterface fn = fromEnv.getFunctions();
 		try (CTypeConversion.CCharPointerHolder name = CTypeConversion.toCString("apply");
 				CTypeConversion.CCharPointerHolder sig = CTypeConversion
-						.toCString("(Ljava/lang/Object;)Ljava/lang/Object;");
-				CTypeConversion.CCharPointerHolder input = CTypeConversion.toCString(body);) {
-			JNINativeInterface fn = fromEnv.getFunctions();
+						.toCString("(Ljava/lang/Object;)Ljava/lang/Object;")) {
 			JClass cls = fn.getGetObjectClass().find(fromEnv, function);
-			JMethodID apply = fn.getGetMethodID().find(fromEnv, cls, name.get(), sig.get());
+			JMethodID apply = fn.getGetMethodID().find(fromEnv, cls, name.get(),
+					sig.get());
 			JValue args = StackValue.get(1, JValue.class);
-			JString string = fn.getNewStringUTF().find(fromEnv, input.get());
-			args.addressOf(0).l(string);
-			JObject result = fn.getCallObjectMethodA().call(fromEnv, function, apply, args);
-			return CTypeConversion.toJavaString(fn.getGetStringUTFChars().find(fromEnv, (JString) result, false));
+			JByteArray bytes = copy(fromEnv, body);
+			args.addressOf(0).l(bytes);
+			JObject result = fn.getCallObjectMethodA().call(fromEnv, function, apply,
+					args);
+			// Leaks memory because bytes is not released?
+			return bytes(fromEnv, (JByteArray) result);
 		}
 		finally {
 			jvm.getFunctions().detachCurrentThread().call(jvm);
 		}
+	}
+
+	private static byte[] bytes(JNIEnvironment env, JByteArray result) {
+		JNINativeInterface fn = env.getFunctions();
+		int size = fn.getGetArrayLength().find(env, result);
+		byte[] bytes = new byte[size];
+		Pointer buffer = fn.getGetByteArrayElements().find(env, result, false);
+		for (int i = 0; i < size; i++) {
+			bytes[i] = buffer.readByte(i);
+		}
+		return bytes;
+	}
+
+	private static JByteArray copy(JNIEnvironment env, byte[] body) {
+		JNINativeInterface fn = env.getFunctions();
+		JByteArray bytes = fn.getNewByteArray().find(env, body.length);
+		Pointer buffer = fn.getGetByteArrayElements().find(env, bytes, false);
+		for (int i = 0; i < body.length; i++) {
+			buffer.writeByte(i, body[i]);
+		}
+		fn.getSetByteArrayRegion().find(env, bytes, 0, body.length, buffer);
+		return bytes;
 	}
 
 	private static JNIEnvironment fromEnv(JavaVM jvm) {

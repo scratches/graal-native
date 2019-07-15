@@ -7,6 +7,7 @@ import org.graalvm.nativeimage.c.struct.CField;
 import org.graalvm.nativeimage.c.struct.CPointerTo;
 import org.graalvm.nativeimage.c.struct.CStruct;
 import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.word.Pointer;
 import org.graalvm.word.PointerBase;
 
 @CContext(JNIHeaderDirectives.class)
@@ -91,6 +92,46 @@ interface JNINativeInterface extends PointerBase {
 	@CField("GetJavaVM")
 	GetJavaVM getJavaVM();
 
+	@CField
+	NewByteArray getNewByteArray();
+
+	@CField
+	GetByteArrayElements getGetByteArrayElements();
+
+	@CField
+	GetArrayLength getGetArrayLength();
+
+	@CField
+	SetByteArrayRegion getSetByteArrayRegion();
+
+	@CField
+	ReleaseByteArrayElements getReleaseByteArrayElements();
+}
+
+interface ReleaseByteArrayElements extends CFunctionPointer {
+	@InvokeCFunctionPointer
+	void find(JNIEnvironment env, JByteArray array, int mode);
+}
+
+interface NewByteArray extends CFunctionPointer {
+	@InvokeCFunctionPointer
+	JByteArray find(JNIEnvironment env, int length);
+}
+
+interface GetArrayLength extends CFunctionPointer {
+	@InvokeCFunctionPointer
+	int find(JNIEnvironment env, JArray array);
+}
+
+interface GetByteArrayElements extends CFunctionPointer {
+	@InvokeCFunctionPointer
+	Pointer find(JNIEnvironment env, JByteArray array, boolean isCopy);
+}
+
+interface SetByteArrayRegion extends CFunctionPointer {
+	@InvokeCFunctionPointer
+	void find(JNIEnvironment env, JByteArray array, int start, int length,
+			Pointer buffer);
 }
 
 interface NewGlobalRef extends CFunctionPointer {
@@ -155,6 +196,12 @@ interface JObject extends PointerBase {
 
 interface JString extends JObject {
 
+}
+
+interface JArray extends JObject {
+}
+
+interface JByteArray extends JArray {
 }
 
 interface CallStaticVoidMethod extends CFunctionPointer {

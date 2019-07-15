@@ -29,8 +29,21 @@ public class FunctionRunner {
 		isolate = createIsolate();
 	}
 
+	private static Function<byte[], byte[]> bytes(Function<String, String> function) {
+		return body -> function.apply(new String(body)).getBytes();
+	}
+
 	public static void run(Function<String, String> function) {
+		run0(isolate, bytes(function));
+		block();
+	}
+
+	public static void raw(Function<byte[], byte[]> function) {
 		run0(isolate, function);
+		block();
+	}
+
+	private static void block() {
 		Thread thread = new Thread(() -> {
 			while (true) {
 				try {
