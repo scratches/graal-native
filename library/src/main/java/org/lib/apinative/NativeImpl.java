@@ -61,7 +61,7 @@ public final class NativeImpl {
 
 	public static Transfer process(Transfer transfer) {
 		JavaVM jvm = javaVM(env);
-		System.err.println("Processing: " + transfer);
+		System.err.println("Processing: " + transfer.getBody().size() + " bytes");
 		JNIEnvironment fromEnv = fromEnv(jvm);
 		JNINativeInterface fn = fromEnv.getFunctions();
 		try (CTypeConversion.CCharPointerHolder name = CTypeConversion.toCString("apply");
