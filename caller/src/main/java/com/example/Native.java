@@ -3,8 +3,8 @@ package com.example;
 import java.nio.charset.Charset;
 
 import com.example.TransferProtos.Transfer;
+import com.example.runner.FunctionRunner;
 import com.google.protobuf.ByteString;
-import org.pkg.apinative.FunctionRunner;
 
 public final class Native {
 

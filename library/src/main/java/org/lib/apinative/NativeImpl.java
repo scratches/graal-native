@@ -36,10 +36,10 @@ public final class NativeImpl {
 				.build();
 	}
 
-	@CEntryPoint(name = "Java_org_pkg_apinative_FunctionRunner_createIsolate", builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
+	@CEntryPoint(name = "Java_com_example_runner_FunctionRunner_createIsolate", builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
 	public static native long createIsolate();
 
-	@CEntryPoint(name = "Java_org_pkg_apinative_FunctionRunner_run0")
+	@CEntryPoint(name = "Java_com_example_runner_FunctionRunner_run0")
 	static void run(JNIEnvironment env, JClass clazz,
 			@CEntryPoint.IsolateThreadContext long threadId, JObject function) {
 		NativeImpl.env = env;
@@ -50,7 +50,7 @@ public final class NativeImpl {
 		context = application.run();
 	}
 
-	@CEntryPoint(name = "Java_org_pkg_apinative_FunctionRunner_close0")
+	@CEntryPoint(name = "Java_com_example_runner_FunctionRunner_close0")
 	static void close(JNIEnvironment env, JClass clazz,
 			@CEntryPoint.IsolateThreadContext long threadId) {
 		if (context != null) {
