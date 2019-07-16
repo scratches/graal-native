@@ -19,6 +19,9 @@ package org.lib.apinative;
 import java.time.Duration;
 import java.util.function.Function;
 
+import com.example.TransferProtos.Transfer;
+import com.example.util.TransferHttpMessageReader;
+import com.example.util.TransferHttpMessageWriter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import reactor.netty.DisposableServer;
@@ -35,6 +38,7 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.SmartApplicationListener;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.http.codec.CodecConfigurer.CustomCodecs;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.ReactorHttpHandlerAdapter;
@@ -54,13 +58,14 @@ import static org.springframework.web.reactive.function.server.ServerResponse.ok
  * @since 2.0
  *
  */
-class FunctionEndpointInitializer implements ApplicationContextInitializer<GenericApplicationContext> {
+class FunctionEndpointInitializer
+		implements ApplicationContextInitializer<GenericApplicationContext> {
 
 	private static long t0 = System.currentTimeMillis();
 
-	private Function<byte[], byte[]> function;
+	private Function<Transfer, Transfer> function;
 
-	public FunctionEndpointInitializer(Function<byte[], byte[]> function) {
+	public FunctionEndpointInitializer(Function<Transfer, Transfer> function) {
 		this.function = function;
 	}
 
@@ -71,30 +76,41 @@ class FunctionEndpointInitializer implements ApplicationContextInitializer<Gener
 	}
 
 	private void registerWebFluxAutoConfiguration(GenericApplicationContext context) {
-		context.registerBean(DefaultErrorWebExceptionHandler.class, () -> errorHandler(context));
-		context.registerBean(WebHttpHandlerBuilder.WEB_HANDLER_BEAN_NAME, HttpWebHandlerAdapter.class,
-				() -> httpHandler(context));
+		context.registerBean(DefaultErrorWebExceptionHandler.class,
+				() -> errorHandler(context));
+		context.registerBean(WebHttpHandlerBuilder.WEB_HANDLER_BEAN_NAME,
+				HttpWebHandlerAdapter.class, () -> httpHandler(context));
 		context.addApplicationListener(new ServerListener(context));
 	}
 
 	private void registerEndpoint(GenericApplicationContext context) {
-		context.registerBean(FunctionEndpointFactory.class, () -> new FunctionEndpointFactory(function));
+		context.registerBean(FunctionEndpointFactory.class,
+				() -> new FunctionEndpointFactory(function));
 		context.registerBean(RouterFunction.class,
 				() -> context.getBean(FunctionEndpointFactory.class).functionEndpoints());
 	}
 
 	private HttpWebHandlerAdapter httpHandler(GenericApplicationContext context) {
-		return (HttpWebHandlerAdapter) RouterFunctions.toHttpHandler(context.getBean(RouterFunction.class),
-				HandlerStrategies.empty().exceptionHandler(context.getBean(WebExceptionHandler.class))
-						.codecs(config -> config.registerDefaults(true)).build());
+		return (HttpWebHandlerAdapter) RouterFunctions.toHttpHandler(
+				context.getBean(RouterFunction.class),
+				HandlerStrategies.empty()
+						.exceptionHandler(context.getBean(WebExceptionHandler.class))
+						.codecs(config -> {
+							config.registerDefaults(false);
+							CustomCodecs custom = config.customCodecs();
+							custom.reader(new TransferHttpMessageReader());
+							custom.writer(new TransferHttpMessageWriter());
+						}).build());
 	}
 
-	private DefaultErrorWebExceptionHandler errorHandler(GenericApplicationContext context) {
+	private DefaultErrorWebExceptionHandler errorHandler(
+			GenericApplicationContext context) {
 		context.registerBean(ErrorAttributes.class, () -> new DefaultErrorAttributes());
 		context.registerBean(ErrorProperties.class, () -> new ErrorProperties());
 		context.registerBean(ResourceProperties.class, () -> new ResourceProperties());
 		DefaultErrorWebExceptionHandler handler = new DefaultErrorWebExceptionHandler(
-				context.getBean(ErrorAttributes.class), context.getBean(ResourceProperties.class),
+				context.getBean(ErrorAttributes.class),
+				context.getBean(ResourceProperties.class),
 				context.getBean(ErrorProperties.class), context);
 		ServerCodecConfigurer codecs = ServerCodecConfigurer.create();
 		handler.setMessageWriters(codecs.getWriters());
@@ -114,18 +130,23 @@ class FunctionEndpointInitializer implements ApplicationContextInitializer<Gener
 
 		@Override
 		public void onApplicationEvent(ApplicationEvent event) {
-			ApplicationContext context = ((ContextRefreshedEvent) event).getApplicationContext();
+			ApplicationContext context = ((ContextRefreshedEvent) event)
+					.getApplicationContext();
 			if (context != this.context) {
 				return;
 			}
-			Integer port = Integer.valueOf(context.getEnvironment().resolvePlaceholders("${server.port:${PORT:8080}}"));
-			String address = context.getEnvironment().resolvePlaceholders("${server.address:0.0.0.0}");
+			Integer port = Integer.valueOf(context.getEnvironment()
+					.resolvePlaceholders("${server.port:${PORT:8080}}"));
+			String address = context.getEnvironment()
+					.resolvePlaceholders("${server.address:0.0.0.0}");
 			if (port >= 0) {
 				HttpHandler handler = context.getBean(HttpHandler.class);
-				ReactorHttpHandlerAdapter adapter = new ReactorHttpHandlerAdapter(handler);
-				HttpServer httpServer = HttpServer.create().host(address).port(port).handle(adapter);
-				Thread thread = new Thread(
-						() -> httpServer.bindUntilJavaShutdown(Duration.ofSeconds(60), this::callback),
+				ReactorHttpHandlerAdapter adapter = new ReactorHttpHandlerAdapter(
+						handler);
+				HttpServer httpServer = HttpServer.create().host(address).port(port)
+						.handle(adapter);
+				Thread thread = new Thread(() -> httpServer
+						.bindUntilJavaShutdown(Duration.ofSeconds(60), this::callback),
 						"server-startup");
 				thread.setDaemon(false);
 				thread.start();
@@ -134,7 +155,8 @@ class FunctionEndpointInitializer implements ApplicationContextInitializer<Gener
 
 		private void callback(DisposableServer server) {
 			logger.info("Server started");
-			System.err.println("JVM running for " + (System.currentTimeMillis() - t0) + "ms");
+			System.err.println(
+					"JVM running for " + (System.currentTimeMillis() - t0) + "ms");
 		}
 
 		@Override
@@ -148,14 +170,15 @@ class FunctionEndpointInitializer implements ApplicationContextInitializer<Gener
 
 class FunctionEndpointFactory {
 
-	private Function<byte[], byte[]> function;
+	private Function<Transfer, Transfer> function;
 
-	public FunctionEndpointFactory(Function<byte[], byte[]> function) {
+	public FunctionEndpointFactory(Function<Transfer, Transfer> function) {
 		this.function = function;
 	}
 
 	public <T> RouterFunction<?> functionEndpoints() {
-		return route(POST("/"), request -> ok().body(request.bodyToMono(byte[].class).map(function), byte[].class));
+		return route(POST("/"), request -> ok()
+				.body(request.bodyToMono(Transfer.class).map(function), Transfer.class));
 	}
 
 }

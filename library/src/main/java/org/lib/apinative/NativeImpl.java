@@ -1,5 +1,8 @@
 package org.lib.apinative;
 
+import com.example.TransferProtos.Transfer;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
@@ -18,9 +21,19 @@ public final class NativeImpl {
 	public static void main(String[] args) {
 		FunctionalSpringApplication application = new FunctionalSpringApplication(
 				Object.class);
-		application.addInitializers(new FunctionEndpointInitializer(
-				value -> new String(value).toUpperCase().getBytes()));
+		application.addInitializers(new FunctionEndpointInitializer(NativeImpl::uppercase));
 		context = application.run(args);
+	}
+
+	/**
+	 * Simple function for testing with main method.
+	 */
+	private static Transfer uppercase(Transfer value) {
+		byte[] body = value.getBody().toByteArray();
+		System.err.println("Processing: " + value + "\n" + body.length + " bytes");
+		return Transfer.newBuilder(value).setBody(ByteString.copyFrom(
+				new String(value.getBody().toByteArray()).toUpperCase().getBytes()))
+				.build();
 	}
 
 	@CEntryPoint(name = "Java_org_pkg_apinative_FunctionRunner_createIsolate", builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
@@ -46,9 +59,9 @@ public final class NativeImpl {
 		}
 	}
 
-	public static byte[] process(byte[] body) {
+	public static Transfer process(Transfer transfer) {
 		JavaVM jvm = javaVM(env);
-		System.err.println("Processing: " + body.length + " bytes");
+		System.err.println("Processing: " + transfer);
 		JNIEnvironment fromEnv = fromEnv(jvm);
 		JNINativeInterface fn = fromEnv.getFunctions();
 		try (CTypeConversion.CCharPointerHolder name = CTypeConversion.toCString("apply");
@@ -58,12 +71,17 @@ public final class NativeImpl {
 			JMethodID apply = fn.getGetMethodID().find(fromEnv, cls, name.get(),
 					sig.get());
 			JValue args = StackValue.get(1, JValue.class);
-			JByteArray bytes = copy(fromEnv, body);
+			JByteArray bytes = copy(fromEnv, transfer.toByteArray());
 			args.addressOf(0).l(bytes);
 			JObject result = fn.getCallObjectMethodA().call(fromEnv, function, apply,
 					args);
 			// Leaks memory because bytes is not released?
-			return bytes(fromEnv, (JByteArray) result);
+			try {
+				return Transfer.parseFrom(bytes(fromEnv, (JByteArray) result));
+			}
+			catch (InvalidProtocolBufferException e) {
+				throw new IllegalStateException("Cannot serialize", e);
+			}
 		}
 		finally {
 			jvm.getFunctions().detachCurrentThread().call(jvm);
