@@ -15,8 +15,6 @@
  */
 package com.example;
 
-import java.io.IOException;
-
 import com.example.codec.CodecFunctionRunner;
 import com.example.runner.FunctionRunner;
 import org.junit.After;
@@ -42,7 +40,7 @@ public class IntegrationTests {
 			.build();
 
 	@BeforeClass
-	public static void setUp() throws IOException {
+	public static void setUp() {
 		System.setProperty("function.library.path", "../target");
 	}
 
@@ -82,19 +80,33 @@ public class IntegrationTests {
 				.isEqualTo("{\"value\":\"FOO\"}");
 	}
 
-	static Message<Foo> process(Message<Foo> transfer) {
-		System.err.println("Receiving: " + transfer);
-		String value = transfer.getPayload().getValue();
+	static Message<Foo> process(Message<Foo> message) {
+		System.err.println("Receiving: " + message);
+		String value = message.getPayload().getValue();
 		return MessageBuilder
 				.withPayload(new Foo(value == null ? null : value.toUpperCase()))
-				.copyHeaders(transfer.getHeaders()).build();
+				.copyHeaders(message.getHeaders()).build();
 	}
 
-	static Foo foos(Foo transfer) {
-		System.err.println("Receiving: " + transfer);
-		String value = transfer.getValue();
+	static Foo foos(Foo foo) {
+		System.err.println("Receiving: " + foo);
+		String value = foo.getValue();
 		// throw new RuntimeException("Planned");
 		return new Foo(value == null ? null : value.toUpperCase());
+	}
+	
+	static class FooApplication {
+		public static void main(String[] args) {
+			IntegrationTests.setUp();
+			CodecFunctionRunner.plain(IntegrationTests::foos, Foo.class, Foo.class);
+		}
+	}
+
+	static class MessageApplication {
+		public static void main(String[] args) {
+			IntegrationTests.setUp();
+			CodecFunctionRunner.message(IntegrationTests::process, Foo.class, Foo.class);
+		}
 	}
 
 }
