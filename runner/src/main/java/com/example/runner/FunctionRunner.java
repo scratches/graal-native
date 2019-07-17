@@ -15,6 +15,7 @@
  */
 package com.example.runner;
 
+import java.io.File;
 import java.util.function.Function;
 
 import com.example.TransferProtos.Transfer;
@@ -40,6 +41,10 @@ public class FunctionRunner {
 		transfer(bytes(function));
 	}
 
+	public static void close() {
+		close0(isolate);
+	}
+
 	private static Function<byte[], byte[]> proto(Function<Transfer, Transfer> function) {
 		return bytes -> {
 			try {
@@ -53,7 +58,13 @@ public class FunctionRunner {
 
 	private static long isolate;
 	static {
-		System.loadLibrary("nativeimpl");
+		if (System.getProperty("function.library.path") != null) {
+			System.load(new File(new File(System.getProperty("function.library.path")),
+					"libnativeimpl.so").getAbsolutePath());
+		}
+		else {
+			System.loadLibrary("nativeimpl");
+		}
 		isolate = createIsolate();
 	}
 
@@ -87,6 +98,8 @@ public class FunctionRunner {
 	}
 
 	private static native void run0(long isolate, Function<?, ?> function);
+
+	private static native void close0(long isolate);
 
 	private static native long createIsolate();
 

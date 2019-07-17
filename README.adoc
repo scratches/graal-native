@@ -2,6 +2,22 @@
 $ mvn clean install
 $ mkdir target
 $ CP=`java -jar $HOME/.m2/repository/org/springframework/boot/experimental/spring-boot-thin-launcher/1.0.22.RELEASE/spring-boot-thin-launcher-1.0.22.RELEASE-exec.jar --thin.archive=library/target/native-library-0.0.1-SNAPSHOT.jar --thin.classpath`
-$ native-image -Dio.netty.noUnsafe=true -H:+ReportExceptionStackTraces --no-fallback --allow-incomplete-classpath --report-unsupported-elements-at-runtime  --shared -H:Name=target/libnativeimpl -cp $HOME/.m2/repository/org/springframework/spring-boot-graal-feature/0.5.0.BUILD-SNAPSHOT/spring-boot-graal-feature-0.5.0.BUILD-SNAPSHOT.jar:$CP 
-$ LD_LIBRARY_PATH=./target java -cp caller/target/native-caller-0.0.1-SNAPSHOT.jar org.pkg.apinative.Native
+$ native-image --no-server -Dio.netty.noUnsafe=true -H:+ReportExceptionStackTraces --no-fallback --allow-incomplete-classpath --report-unsupported-elements-at-runtime  --shared -H:Name=target/libnativeimpl -cp $HOME/.m2/repository/org/springframework/spring-boot-graal-feature/0.5.0.BUILD-SNAPSHOT/spring-boot-graal-feature-0.5.0.BUILD-SNAPSHOT.jar:$CP --initialize-at-build-time=com.google.protobuf.ExtensionRegistry,com.google.protobuf.Extension
+```
+
+Vanilla client:
+
+```
+$ CCP=`java -jar $HOME/.m2/repository/org/springframework/boot/experimental/spring-boot-thin-launcher/1.0.22.RELEASE/spring-boot-thin-launcher-1.0.22.RELEASE-exec.jar --thin.archive=caller/target/native-caller-0.0.1-SNAPSHOT.jar --thin.classpath`
+$ LD_LIBRARY_PATH=./target java -cp $CCP com.example.Native
+$ curl -v localhost:8080 -d foo -H "Content-Type: text/plain"
+```
+
+Type converting, codec client
+
+
+```
+$ CCP=`java -jar $HOME/.m2/repository/org/springframework/boot/experimental/spring-boot-thin-launcher/1.0.22.RELEASE/spring-boot-thin-launcher-1.0.22.RELEASE-exec.jar --thin.archive=pojo/target/native-caller-0.0.1-SNAPSHOT.jar --thin.classpath`
+$  LD_LIBRARY_PATH=./target java -cp caller/target/native-caller-0.0.1-SNAPSHOT.jar com.example.DemoApplication
+$ curl -v localhost:8080 -d foo -H "Content-Type: text/plain"
 ```

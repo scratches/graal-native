@@ -75,8 +75,11 @@ public final class NativeImpl {
 			args.addressOf(0).l(bytes);
 			JObject result = fn.getCallObjectMethodA().call(fromEnv, function, apply,
 					args);
-			// Leaks memory because bytes is not released?
+			if (!result.isNonNull()) {
+				throw new IllegalStateException("Function call failed");
+			}
 			try {
+				// Leaks memory because bytes is not released?
 				return Transfer.parseFrom(bytes(fromEnv, (JByteArray) result));
 			}
 			catch (InvalidProtocolBufferException e) {

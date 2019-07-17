@@ -18,6 +18,7 @@
 		<module>runner</module>
 		<module>spring</module>
 		<module>caller</module>
+		<module>pojo</module>
 		<module>library</module>
 	</modules>
 
