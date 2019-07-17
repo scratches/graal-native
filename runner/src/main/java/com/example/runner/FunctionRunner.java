@@ -60,10 +60,10 @@ public class FunctionRunner {
 	static {
 		if (System.getProperty("function.library.path") != null) {
 			System.load(new File(new File(System.getProperty("function.library.path")),
-					"libnativeimpl.so").getAbsolutePath());
+					"libnettylistener.so").getAbsolutePath());
 		}
 		else {
-			System.loadLibrary("nativeimpl");
+			System.loadLibrary("nettylistener");
 		}
 		isolate = createIsolate();
 	}

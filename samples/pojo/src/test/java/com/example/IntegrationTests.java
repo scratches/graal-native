@@ -41,7 +41,7 @@ public class IntegrationTests {
 
 	@BeforeClass
 	public static void setUp() {
-		System.setProperty("function.library.path", "../target");
+		System.setProperty("function.library.path", "../../target");
 	}
 
 	@After
