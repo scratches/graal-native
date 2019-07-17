@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import com.example.TransferProtos.Headers;
 import com.example.TransferProtos.Headers.Header;
 import com.example.TransferProtos.Transfer;
+import com.example.TransferProtos.Transfer.Builder;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.ProtocolStringList;
 
@@ -81,8 +82,11 @@ public class TransferUtils {
 				headers.addHeader(Header.newBuilder().setName(key));
 			}
 		}
-		return Transfer.newBuilder().setBody(ByteString.copyFrom(message.getPayload()))
-				.setHeaders(headers).build();
+		Builder builder = Transfer.newBuilder();
+		if (message.getPayload() != null) {
+			builder = builder.setBody(ByteString.copyFrom(message.getPayload()));
+		}
+		return builder.setHeaders(headers).build();
 	}
 
 }

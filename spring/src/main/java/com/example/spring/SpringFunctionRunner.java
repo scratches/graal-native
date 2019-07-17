@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.message;
+package com.example.spring;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,6 @@ import org.springframework.messaging.converter.DefaultContentTypeResolver;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
-import org.springframework.messaging.simp.config.AbstractMessageBrokerConfiguration;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.MimeTypeUtils;
@@ -39,24 +38,43 @@ import org.springframework.util.MimeTypeUtils;
  * @author Dave Syer
  *
  */
-public class MessageFunctionRunner {
+public class SpringFunctionRunner {
 
-	public static <I, O> void message(Function<Message<I>, Message<O>> function) {
-		FunctionRunner.transfer(transfer(function));
+	public static <I, O> void message(Function<Message<I>, Message<O>> function, Class<I> input, Class<O> output) {
+		FunctionRunner.transfer(transfer(function, input, output));
 	}
 
+	public static <I, O> void plain(Function<I, O> function, Class<I> input, Class<O> output) {
+		FunctionRunner.transfer(plains(function, input, output));
+	}
+
+	private static <I, O> Function<Transfer, Transfer> plains(
+			Function<I, O> function, Class<I> inputType, Class<O> outputType) {
+		return transfer(input -> wrap(input, function), inputType, outputType);
+	}
+	
+	private static <I,O> Message<O> wrap(Message<I> input, Function<I, O> function) {
+		O payload = function.apply(input.getPayload());
+		return MessageBuilder.withPayload(payload).copyHeaders(input.getHeaders()).build();
+	}
+	
 	private static <I, O> Function<Transfer, Transfer> transfer(
-			Function<Message<I>, Message<O>> function) {
+			Function<Message<I>, Message<O>> function, Class<I> inputType, Class<O> outputType) {
 		MessageConverter converter = new ConverterFactory().brokerMessageConverter();
 		return transfer -> {
 			Message<byte[]> input = TransferUtils.toMessage(transfer);
 			@SuppressWarnings("unchecked")
-			Message<I> message = (Message<I>) converter.toMessage(input.getPayload(),
-					input.getHeaders());
+			I payload = (I)converter.fromMessage(input, inputType);
+			if (payload==null) {
+				throw new IllegalStateException("Cannot convert to: " + inputType);
+			}
+			Message<I> message = MessageBuilder.withPayload(payload).copyHeaders(input.getHeaders()).build();
 			Message<O> output = function.apply(message);
-			byte[] payload = (byte[]) converter.fromMessage(output, byte[].class);
-			Message<byte[]> result = MessageBuilder.withPayload(payload)
-					.copyHeaders(output.getHeaders()).build();
+			@SuppressWarnings("unchecked")
+			Message<byte[]> result = (Message<byte[]>) converter.toMessage(output.getPayload(), output.getHeaders());
+			if (result == null) {
+				throw new IllegalStateException("Cannot convert from: " + outputType);
+			}
 			return TransferUtils.fromMessage(result);
 		};
 	}
