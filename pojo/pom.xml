@@ -28,7 +28,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.example</groupId>
-			<artifactId>native-spring</artifactId>
+			<artifactId>native-codec</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

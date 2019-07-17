@@ -16,7 +16,7 @@
 
 	<modules>
 		<module>runner</module>
-		<module>spring</module>
+		<module>codec</module>
 		<module>caller</module>
 		<module>pojo</module>
 		<module>library</module>

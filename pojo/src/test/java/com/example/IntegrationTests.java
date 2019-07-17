@@ -17,8 +17,8 @@ package com.example;
 
 import java.io.IOException;
 
+import com.example.codec.CodecFunctionRunner;
 import com.example.runner.FunctionRunner;
-import com.example.spring.SpringFunctionRunner;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public class IntegrationTests {
 
 	@Test
 	public void plainText() {
-		SpringFunctionRunner.plain(String::toUpperCase, String.class, String.class);
+		CodecFunctionRunner.plain(String::toUpperCase, String.class, String.class);
 		Mono<ClientResponse> result = client.post().body(Mono.just("foo"), String.class)
 				.headers(headers -> headers.setContentType(MediaType.TEXT_PLAIN))
 				.exchange();
@@ -62,7 +62,7 @@ public class IntegrationTests {
 
 	@Test
 	public void pojo() {
-		SpringFunctionRunner.plain(IntegrationTests::foos, Foo.class, Foo.class);
+		CodecFunctionRunner.plain(IntegrationTests::foos, Foo.class, Foo.class);
 		Mono<ClientResponse> result = client.post()
 				.body(Mono.just("{\"value\":\"foo\"}"), String.class)
 				.headers(headers -> headers.setContentType(MediaType.APPLICATION_JSON))
@@ -73,7 +73,7 @@ public class IntegrationTests {
 
 	@Test
 	public void message() {
-		SpringFunctionRunner.message(IntegrationTests::process, Foo.class, Foo.class);
+		CodecFunctionRunner.message(IntegrationTests::process, Foo.class, Foo.class);
 		Mono<ClientResponse> result = client.post()
 				.body(Mono.just("{\"value\":\"foo\"}"), String.class)
 				.headers(headers -> headers.setContentType(MediaType.APPLICATION_JSON))

@@ -1,11 +1,11 @@
 package com.example;
 
-import com.example.spring.SpringFunctionRunner;
+import com.example.codec.CodecFunctionRunner;
 
 public final class DemoApplication {
 
 	public static void main(String[] args) {
-		SpringFunctionRunner.plain(String::toUpperCase, String.class, String.class);
+		CodecFunctionRunner.plain(String::toUpperCase, String.class, String.class);
 	}
 
 }

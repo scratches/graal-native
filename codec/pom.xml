@@ -4,11 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.example</groupId>
-	<artifactId>native-spring</artifactId>
+	<artifactId>native-codec</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>native-spring</name>
+	<name>native-codec</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>

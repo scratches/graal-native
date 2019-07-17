@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.spring;
+package com.example.codec;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ import org.springframework.util.MimeTypeUtils;
  * @author Dave Syer
  *
  */
-public class SpringFunctionRunner {
+public class CodecFunctionRunner {
 
 	public static <I, O> void message(Function<Message<I>, Message<O>> function, Class<I> input, Class<O> output) {
 		FunctionRunner.transfer(transfer(function, input, output));
