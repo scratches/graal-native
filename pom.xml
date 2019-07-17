@@ -17,7 +17,7 @@
 	<modules>
 		<module>runner</module>
 		<module>codec</module>
-		<module>library</module>
+		<module>netty</module>
 		<module>samples</module>
 	</modules>
 
