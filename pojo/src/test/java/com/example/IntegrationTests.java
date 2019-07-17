@@ -91,22 +91,7 @@ public class IntegrationTests {
 	static Foo foos(Foo foo) {
 		System.err.println("Receiving: " + foo);
 		String value = foo.getValue();
-		// throw new RuntimeException("Planned");
 		return new Foo(value == null ? null : value.toUpperCase());
-	}
-	
-	static class FooApplication {
-		public static void main(String[] args) {
-			IntegrationTests.setUp();
-			CodecFunctionRunner.plain(IntegrationTests::foos, Foo.class, Foo.class);
-		}
-	}
-
-	static class MessageApplication {
-		public static void main(String[] args) {
-			IntegrationTests.setUp();
-			CodecFunctionRunner.message(IntegrationTests::process, Foo.class, Foo.class);
-		}
 	}
 
 }
