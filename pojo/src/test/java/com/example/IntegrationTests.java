@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class IntegrationTests {
 
-	private WebClient client = WebClient.builder().baseUrl("http://localhost:8080")
+	private WebClient client = WebClient.builder().baseUrl("http://localhost:9000")
 			.build();
 
 	@BeforeClass

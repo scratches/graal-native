@@ -47,7 +47,7 @@ public final class NativeImpl {
 		FunctionalSpringApplication application = new FunctionalSpringApplication(
 				Object.class);
 		application.addInitializers(new FunctionEndpointInitializer(NativeImpl::process));
-		context = application.run();
+		context = application.run("--spring.config.location=file:application.properties");
 	}
 
 	@CEntryPoint(name = "Java_com_example_runner_FunctionRunner_close0")
