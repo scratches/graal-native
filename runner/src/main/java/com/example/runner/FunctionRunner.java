@@ -58,7 +58,11 @@ public class FunctionRunner {
 
 	private static long isolate;
 	static {
-		if (System.getProperty("function.library.path") != null) {
+		if (System.getProperty("function.library.location") != null) {
+			System.load(new File(System.getProperty("function.library.location"))
+					.getAbsolutePath());
+		}
+		else if (System.getProperty("function.library.path") != null) {
 			System.load(new File(new File(System.getProperty("function.library.path")),
 					"libnettylistener.so").getAbsolutePath());
 		}

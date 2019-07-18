@@ -41,7 +41,10 @@ public class IntegrationTests {
 
 	@BeforeClass
 	public static void setUp() {
-		System.setProperty("function.library.path", "../../target");
+		if (System.getProperty("function.library.location") == null
+				&& System.getProperty("function.library.path") == null) {
+			System.setProperty("function.library.path", "../../target");
+		}
 	}
 
 	@After

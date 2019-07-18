@@ -33,7 +33,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-messaging</artifactId>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>io.projectreactor</groupId>

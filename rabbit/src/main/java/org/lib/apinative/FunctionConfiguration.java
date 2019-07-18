@@ -16,8 +16,11 @@
 
 package org.lib.apinative;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import com.example.TransferProtos.Transfer;
@@ -32,10 +35,12 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.amqp.support.converter.MessageConversionException;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.integration.IntegrationAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.amqp.support.AmqpHeaderMapper;
 import org.springframework.integration.amqp.support.DefaultAmqpHeaderMapper;
@@ -48,7 +53,8 @@ import org.springframework.stereotype.Component;
  * @since 2.0
  *
  */
-@SpringBootApplication(proxyBeanMethods = false)
+@SpringBootApplication(proxyBeanMethods = false, exclude = {
+		IntegrationAutoConfiguration.class })
 class FunctionConfiguration {
 
 	private volatile AmqpHeaderMapper inboundHeaderMapper = DefaultAmqpHeaderMapper
@@ -79,6 +85,9 @@ class FunctionConfiguration {
 
 	@Bean
 	MessageConverter transferMessageConverter() {
+		Set<String> FILTERED_HEADERS = new HashSet<>(
+				Arrays.asList(AmqpHeaders.DELIVERY_TAG, AmqpHeaders.MESSAGE_ID,
+						AmqpHeaders.REDELIVERED, AmqpHeaders.CONTENT_LENGTH));
 		// TODO: use MessagingMessageConverter?
 		return new MessageConverter() {
 
@@ -90,6 +99,11 @@ class FunctionConfiguration {
 				headers.putAll(
 						outboundHeaderMapper.toHeadersFromReply(messageProperties));
 				headers.putAll(TransferUtils.toMessage(transfer).getHeaders());
+				for (String name : new HashSet<>(headers.keySet())) {
+					if (FILTERED_HEADERS.contains(name)) {
+						headers.remove(name);
+					}
+				}
 				outboundHeaderMapper.fromHeadersToReply(new MessageHeaders(headers),
 						messageProperties);
 				return new Message(transfer.getBody().toByteArray(), messageProperties);
@@ -114,6 +128,8 @@ class Receiver {
 	private Function<Transfer, Transfer> function;
 
 	public Receiver(RabbitTemplate template, Function<Transfer, Transfer> function) {
+		System.err.println("Template: [" + template.getExchange() + ",'"
+				+ template.getRoutingKey() + "']");
 		this.template = template;
 		this.function = function;
 	}
@@ -124,8 +140,10 @@ class Receiver {
 	 */
 	@RabbitListener(queues = "#{queue.name}")
 	public void receive(Transfer message) {
-		System.out.println("Received <" + message + ">");
-		template.convertAndSend(function.apply(message));
+		System.out.println("Received: " + message.getBody().size() + " bytes");
+		Transfer response = function.apply(message);
+		System.out.println("Result: " + response.getBody().size() + " bytes");
+		template.convertAndSend(response);
 	}
 
 }
