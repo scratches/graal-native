@@ -18,6 +18,7 @@
 		<module>runner</module>
 		<module>codec</module>
 		<module>netty</module>
+		<module>rabbit</module>
 		<module>samples</module>
 	</modules>
 
