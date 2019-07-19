@@ -27,7 +27,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.example</groupId>
-			<artifactId>native-codec</artifactId>
+			<artifactId>native-runner</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
