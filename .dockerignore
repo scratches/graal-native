@@ -1,0 +1,8 @@
+**/target
+Dockerfile
+build.sh
+.dockerignore
+*.h
+**/.attach_pid*
+**/hs_err_*
+.git

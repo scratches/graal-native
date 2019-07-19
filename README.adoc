@@ -1,9 +1,12 @@
+First build everything:
+
 ```
-$ mvn clean install -DskipTests
-$ mkdir target
-$ CP=`java -jar $HOME/.m2/repository/org/springframework/boot/experimental/spring-boot-thin-launcher/1.0.22.RELEASE/spring-boot-thin-launcher-1.0.22.RELEASE-exec.jar --thin.archive=listener/netty/target/native-netty-0.0.1-SNAPSHOT.jar --thin.classpath`
-$ native-image --no-server -Dio.netty.noUnsafe=true -H:+ReportExceptionStackTraces --no-fallback --allow-incomplete-classpath --report-unsupported-elements-at-runtime  --shared -H:Name=target/libnettylistener -cp $CP
+$ ./mvnw clean install -DskipTests
+$ ./build.sh
 ```
+
+and then the tests should pass as well (there's an integration test
+that makes an assumption about the native library being available).
 
 Vanilla client:
 
@@ -20,4 +23,14 @@ Type converting, spring-messaging client:
 $ CCP=`java -jar $HOME/.m2/repository/org/springframework/boot/experimental/spring-boot-thin-launcher/1.0.22.RELEASE/spring-boot-thin-launcher-1.0.22.RELEASE-exec.jar --thin.archive=samples/pojo/target/native-caller-0.0.1-SNAPSHOT.jar --thin.classpath`
 $  LD_LIBRARY_PATH=./target java -cp $CCP com.example.DemoApplication
 $ curl -v localhost:9000 -d foo -H "Content-Type: text/plain"
+```
+
+== Native Image Command Line
+
+Instead of using the docker build script you can do it manually:
+
+```
+$ mkdir target
+$ CP=`java -jar $HOME/.m2/repository/org/springframework/boot/experimental/spring-boot-thin-launcher/1.0.22.RELEASE/spring-boot-thin-launcher-1.0.22.RELEASE-exec.jar --thin.archive=listener/netty/target/native-netty-0.0.1-SNAPSHOT.jar --thin.classpath`
+$ native-image --no-server -Dio.netty.noUnsafe=true -H:+ReportExceptionStackTraces --no-fallback --allow-incomplete-classpath --report-unsupported-elements-at-runtime  --shared -H:Name=target/libnettylistener -cp $CP
 ```
