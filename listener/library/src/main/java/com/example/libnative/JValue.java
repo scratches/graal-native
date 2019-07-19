@@ -1,4 +1,4 @@
-package org.lib.apinative;
+package com.example.libnative;
 
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.struct.CField;

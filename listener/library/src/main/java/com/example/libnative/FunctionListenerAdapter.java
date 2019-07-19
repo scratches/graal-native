@@ -13,31 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lib.apinative;
+package com.example.libnative;
 
 import java.util.function.Function;
 
 import com.example.TransferProtos.Transfer;
 
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.support.GenericApplicationContext;
-
 /**
  * @author Dave Syer
  *
  */
-public class FunctionEndpointInitializer
-		implements ApplicationContextInitializer<GenericApplicationContext> {
+public interface FunctionListenerAdapter {
 
-	private Function<Transfer, Transfer> function;
+	void run(Function<Transfer, Transfer> function);
 
-	public FunctionEndpointInitializer(Function<Transfer, Transfer> function) {
-		this.function = function;
-	}
-
-	@Override
-	public void initialize(GenericApplicationContext context) {
-		context.registerBean(Function.class, () -> function);
-	}
+	void close();
 
 }

@@ -1,4 +1,22 @@
-package org.lib.apinative;
+/*
+ * Copyright 2019-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.libnative;
+
+import java.util.ServiceLoader;
+import java.util.function.Function;
 
 import com.example.TransferProtos.Transfer;
 import com.google.protobuf.ByteString;
@@ -8,23 +26,22 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.Pointer;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ConfigurableApplicationContext;
-
+/**
+ * Entry points for native library that connects to a source and sink of messages, and
+ * passes them to a user-defined {@link Function} to be handled. Library authors need to
+ * provide a single implementation of {@link FunctionListenerAdapter} and declare it in
+ * the standard service loader (META-INF/services).
+ * 
+ * @author Dave Syer
+ *
+ */
 public final class NativeImpl {
 
 	private static JObject function;
 
 	private static JNIEnvironment env;
 
-	private static ConfigurableApplicationContext context;
-
-	public static void main(String[] args) {
-		SpringApplication application = new SpringApplication(
-				FunctionConfiguration.class);
-		application.addInitializers(new FunctionEndpointInitializer(NativeImpl::uppercase));
-		context = application.run(args);
-	}
+	private static FunctionListenerAdapter adapter;
 
 	/**
 	 * Simple function for testing with main method.
@@ -45,18 +62,18 @@ public final class NativeImpl {
 			@CEntryPoint.IsolateThreadContext long threadId, JObject function) {
 		NativeImpl.env = env;
 		NativeImpl.function = env.getFunctions().getNewGlobalRef().find(env, function);
-		SpringApplication application = new SpringApplication(
-				FunctionConfiguration.class);
-		application.addInitializers(new FunctionEndpointInitializer(NativeImpl::process));
-		context = application.run("--spring.config.location=file:application.properties,classpath:application.properties");
+		// TODO: look for conflicts, missing adapter etc.
+		adapter = ServiceLoader.load(FunctionListenerAdapter.class).iterator().next();
+		System.err.println("Found adapter: " + adapter);
+		adapter.run(NativeImpl::process);
 	}
 
 	@CEntryPoint(name = "Java_com_example_runner_FunctionRunner_close0")
 	static void close(JNIEnvironment env, JClass clazz,
 			@CEntryPoint.IsolateThreadContext long threadId) {
-		if (context != null) {
-			context.close();
-			context = null;
+		if (adapter != null) {
+			adapter.close();
+			adapter = null;
 		}
 	}
 

@@ -1,4 +1,4 @@
-package org.lib.apinative;
+package com.example.libnative;
 
 import java.io.File;
 import java.util.Arrays;

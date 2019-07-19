@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.lib.apinative;
+package com.example.netty;
 
 import java.time.Duration;
 import java.util.function.Function;

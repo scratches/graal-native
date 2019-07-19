@@ -1,0 +1,32 @@
+[
+	{
+		"name": "com.example.TransferProtos$Transfer",
+		"allDeclaredConstructors": true,
+		"allDeclaredMethods": true
+	},
+	{
+		"name": "com.example.TransferProtos$Transfer$Builder",
+		"allDeclaredConstructors": true,
+		"allDeclaredMethods": true
+	},
+	{
+		"name": "com.example.TransferProtos$Headers",
+		"allDeclaredConstructors": true,
+		"allDeclaredMethods": true
+	},
+	{
+		"name": "com.example.TransferProtos$Headers$Builder",
+		"allDeclaredConstructors": true,
+		"allDeclaredMethods": true
+	},
+	{
+		"name": "com.example.TransferProtos$Headers$Header",
+		"allDeclaredConstructors": true,
+		"allDeclaredMethods": true
+	},
+	{
+		"name": "com.example.TransferProtos$Headers$Header$Builder",
+		"allDeclaredConstructors": true,
+		"allDeclaredMethods": true
+	}
+]

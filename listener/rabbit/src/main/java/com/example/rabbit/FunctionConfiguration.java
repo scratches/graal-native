@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.lib.apinative;
+package com.example.rabbit;
 
 import java.util.Arrays;
 import java.util.HashMap;

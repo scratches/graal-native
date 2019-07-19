@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.lib.apinative;
+package com.example.netty;
 
 import java.util.Arrays;
 import java.util.Collections;

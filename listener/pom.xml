@@ -15,6 +15,7 @@
 	<name>Parent Demo</name>
 
 	<modules>
+		<module>library</module>
 		<module>netty</module>
 		<module>rabbit</module>
 	</modules>
