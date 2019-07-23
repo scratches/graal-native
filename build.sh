@@ -11,3 +11,8 @@ docker rm listener
 docker build -t listener --build-arg LISTENER=rabbit .
 docker create --name listener listener
 docker cp listener:/workspace/app/target/librabbitlistener.so target
+
+docker rm listener
+docker build -t listener --build-arg LISTENER=http.
+docker create --name listener listener
+docker cp listener:/workspace/app/target/libhttplistener.so target

@@ -17,6 +17,7 @@
 	<modules>
 		<module>library</module>
 		<module>netty</module>
+		<module>http</module>
 		<module>rabbit</module>
 	</modules>
 

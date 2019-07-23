@@ -91,7 +91,7 @@ public class FunctionRunner {
 		Thread thread = new Thread(() -> {
 			while (true) {
 				try {
-					Thread.sleep(100L);
+					Thread.sleep(1000L);
 				}
 				catch (InterruptedException e) {
 				}
@@ -101,7 +101,7 @@ public class FunctionRunner {
 		thread.start();
 	}
 
-	private static native void run0(long isolate, Function<?, ?> function);
+	private static native void run0(long isolate, Function<byte[], byte[]> function);
 
 	private static native void close0(long isolate);
 

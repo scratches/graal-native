@@ -19,7 +19,6 @@ import java.util.ServiceLoader;
 import java.util.function.Function;
 
 import com.example.TransferProtos.Transfer;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
@@ -42,17 +41,6 @@ public final class NativeImpl {
 	private static JNIEnvironment env;
 
 	private static FunctionListenerAdapter adapter;
-
-	/**
-	 * Simple function for testing with main method.
-	 */
-	private static Transfer uppercase(Transfer value) {
-		byte[] body = value.getBody().toByteArray();
-		System.err.println("Processing: " + value + "\n" + body.length + " bytes");
-		return Transfer.newBuilder(value).setBody(ByteString.copyFrom(
-				new String(value.getBody().toByteArray()).toUpperCase().getBytes()))
-				.build();
-	}
 
 	@CEntryPoint(name = "Java_com_example_runner_FunctionRunner_createIsolate", builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
 	public static native long createIsolate();
