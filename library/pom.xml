@@ -34,24 +34,6 @@
 			<groupId>com.oracle.substratevm</groupId>
 			<artifactId>library-support</artifactId>
 			<version>1.0.0-rc8</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.oracle.substratevm</groupId>
-					<artifactId>svm</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.graalvm.compiler</groupId>
-					<artifactId>compiler</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>jline</groupId>
-					<artifactId>jline</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.oracle.substratevm</groupId>
-					<artifactId>objectfile</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 
