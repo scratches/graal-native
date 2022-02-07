@@ -5,12 +5,12 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 
 public final class NativeImpl {
-	@CEntryPoint(name = "Java_org_pkg_apinative_Native_createIsolate", builtin = CEntryPoint.Builtin.CreateIsolate)
+	@CEntryPoint(name = "Java_org_pkg_apinative_Native_createIsolate", builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
 	public static native long createIsolate();
 
 	@CEntryPoint(name = "Java_org_pkg_apinative_Native_add0")
 	static int add(JNIEnvironment env, JClass clazz,
-			@CEntryPoint.IsolateContext long isolateId, int a, int b) {
+			@CEntryPoint.IsolateThreadContext long isolateId, int a, int b) {
 		JNINativeInterface fn = env.getFunctions();
 
 		try (CTypeConversion.CCharPointerHolder name = CTypeConversion.toCString("hello");
@@ -38,7 +38,7 @@ public final class NativeImpl {
 
 	@CEntryPoint(name = "Java_org_pkg_apinative_Native_run0")
 	static JObject run(JNIEnvironment env, JClass clazz,
-			@CEntryPoint.IsolateContext long isolateId, JObject function,
+			@CEntryPoint.IsolateThreadContext long  isolateId, JObject function,
 			JObject object) {
 		JNINativeInterface fn = env.getFunctions();
 		try (CTypeConversion.CCharPointerHolder name = CTypeConversion.toCString("apply");
@@ -48,7 +48,7 @@ public final class NativeImpl {
 			JMethodID apply = fn.getGetMethodID().find(env, cls, name.get(), sig.get());
 			JValue args = StackValue.get(1, JValue.class);
 			args.addressOf(0).l(object);
-			System.err.println("Running: " + string(env, object));
+			System.err.println("Running: ");
 			JObject result = fn.getCallObjectMethodA().call(env, function, apply, args);
 			return result;
 		}
