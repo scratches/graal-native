@@ -8,6 +8,7 @@ import org.graalvm.nativeimage.c.struct.CPointerTo;
 import org.graalvm.nativeimage.c.struct.CStruct;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.word.PointerBase;
+import com.oracle.svm.jni.nativeapi.JNIHeaderDirectives;
 
 @CContext(JNIHeaderDirectives.class)
 @CStruct(value = "JNIEnv_", addStructKeyword = true)

@@ -27,3 +27,5 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
+
+.vscode/
