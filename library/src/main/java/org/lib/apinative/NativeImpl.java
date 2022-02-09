@@ -1,5 +1,7 @@
 package org.lib.apinative;
 
+import com.oracle.svm.core.SubstrateDiagnostics.FatalErrorState;
+
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
@@ -26,9 +28,9 @@ public final class NativeImpl {
 						.toCString("()Ljava/lang/String;");) {
 			JClass cls = fn.getGetObjectClass().find(env, object);
 			JMethodID method = fn.getGetMethodID().find(env, cls, name.get(), sig.get());
-			JValue args = StackValue.get(0, JValue.class);
+			JValue args = StackValue.get(1, JValue.class);
 			JObject call = fn.getCallObjectMethodA().call(env, object, method, args);
-			String string = CTypeConversion.toJavaString(fn.getGetStringUTFChars().find(env, call));
+			String string = CTypeConversion.toJavaString(fn.getGetStringUTFChars().find(env, call, false));
 			return string;
 		}
 	}
