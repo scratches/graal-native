@@ -9,11 +9,10 @@ public final class NativeImpl {
 	public static native long createIsolate();
 
 	@CEntryPoint(name = "Java_org_pkg_apinative_Native_print0")
-	static JObject print(JNIEnvironment env, JClass clazz,
+	static void print(JNIEnvironment env, JClass clazz,
 			@CEntryPoint.IsolateThreadContext long  isolateId, JObject object) {
 		JNINativeInterface fn = env.getFunctions();
 		System.err.println("Running: " + string(env, object));
-		return object;
 	}
 
 	private static String string(JNIEnvironment env, JObject object) {
