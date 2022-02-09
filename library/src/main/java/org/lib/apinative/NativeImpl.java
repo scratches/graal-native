@@ -2,6 +2,7 @@ package org.lib.apinative;
 
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
+import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 
 public final class NativeImpl {
@@ -12,7 +13,7 @@ public final class NativeImpl {
 	static void print(JNIEnvironment env, JClass clazz,
 			@CEntryPoint.IsolateThreadContext long  isolateId, JObject object) {
 		JNINativeInterface fn = env.getFunctions();
-		System.err.println("Running: " + string(env, object));
+		System.err.println("Printing: " + string(env, object));
 	}
 
 	private static String string(JNIEnvironment env, JObject object) {
@@ -25,8 +26,10 @@ public final class NativeImpl {
 			JMethodID method = fn.getGetMethodID().find(env, cls, name.get(), sig.get());
 			JValue args = StackValue.get(0, JValue.class);
 			JObject call = fn.getCallObjectMethodA().call(env, object, method, args);
-			String string = CTypeConversion
-					.toJavaString(fn.getGetStringUTFChars().find(env, call));
+			CCharPointer chars = fn.getGetStringUTFChars().find(env, call);
+			String string = CTypeConversion.toJavaString(chars);
+			fn.getReleaseStringUTFChars().find(env, call, chars);
+			fn.getDeleteGlobalRef().find(env, call);
 			return string;
 		}
 	}

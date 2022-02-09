@@ -46,6 +46,22 @@ interface JNINativeInterface extends PointerBase {
 	@CField
 	GetStringUTFChars getGetStringUTFChars();
 
+	@CField
+	ReleaseStringUTFChars getReleaseStringUTFChars();
+
+	@CField
+	DeleteGlobalRef getDeleteGlobalRef();
+
+}
+
+interface DeleteGlobalRef extends CFunctionPointer {
+	@InvokeCFunctionPointer
+	void find(JNIEnvironment env, PointerBase object);
+}
+
+interface ReleaseStringUTFChars extends CFunctionPointer {
+	@InvokeCFunctionPointer
+	void find(JNIEnvironment env, JObject object, CCharPointer chars);
 }
 
 interface GetStringUTFChars extends CFunctionPointer {
