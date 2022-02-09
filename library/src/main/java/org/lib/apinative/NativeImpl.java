@@ -13,7 +13,9 @@ public final class NativeImpl {
 	static void print(JNIEnvironment env, JClass clazz,
 			@CEntryPoint.IsolateThreadContext long  isolateId, JObject object) {
 		JNINativeInterface fn = env.getFunctions();
+		System.err.println("Starting");
 		System.err.println("Printing: " + string(env, object));
+		System.err.println("Done");
 	}
 
 	private static String string(JNIEnvironment env, JObject object) {
@@ -26,10 +28,7 @@ public final class NativeImpl {
 			JMethodID method = fn.getGetMethodID().find(env, cls, name.get(), sig.get());
 			JValue args = StackValue.get(0, JValue.class);
 			JObject call = fn.getCallObjectMethodA().call(env, object, method, args);
-			CCharPointer chars = fn.getGetStringUTFChars().find(env, call);
-			String string = CTypeConversion.toJavaString(chars);
-			fn.getReleaseStringUTFChars().find(env, call, chars);
-			fn.getDeleteGlobalRef().find(env, call);
+			String string = CTypeConversion.toJavaString(fn.getGetStringUTFChars().find(env, call));
 			return string;
 		}
 	}

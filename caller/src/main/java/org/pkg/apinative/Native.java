@@ -12,11 +12,11 @@ public final class Native {
 		print(new Foo("foo"));
 	}
 
-	public static <T> void print(T input) {
+	public static void print(Object input) {
 		print0(isolate, input);
 	}
 
-	private static native <T> void print0(long isolate, T foo);
+	private static native void print0(long isolate, Object foo);
 
 	private static native long createIsolate();
 
