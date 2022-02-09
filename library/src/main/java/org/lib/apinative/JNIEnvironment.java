@@ -50,7 +50,7 @@ interface JNINativeInterface extends PointerBase {
 
 interface GetStringUTFChars extends CFunctionPointer {
 	@InvokeCFunctionPointer
-	CCharPointer find(JNIEnvironment env, JObject object);
+	CCharPointer find(JNIEnvironment env, JObject object, boolean copy);
 }
 
 interface GetObjectClass extends CFunctionPointer {

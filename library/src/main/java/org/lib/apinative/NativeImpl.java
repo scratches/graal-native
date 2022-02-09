@@ -48,7 +48,7 @@ public final class NativeImpl {
 			JMethodID apply = fn.getGetMethodID().find(env, cls, name.get(), sig.get());
 			JValue args = StackValue.get(1, JValue.class);
 			args.addressOf(0).l(object);
-			System.err.println("Running: ");
+			System.err.println("Running: " + string(env, object));
 			JObject result = fn.getCallObjectMethodA().call(env, function, apply, args);
 			return result;
 		}
@@ -62,9 +62,10 @@ public final class NativeImpl {
 						.toCString("()Ljava/lang/String;");) {
 			JClass cls = fn.getGetObjectClass().find(env, object);
 			JMethodID method = fn.getGetMethodID().find(env, cls, name.get(), sig.get());
-			JObject call = fn.getCallObjectMethodA().call(env, object, method, null);
+			JValue args = StackValue.get(0, JValue.class);
+			JObject call = fn.getCallObjectMethodA().call(env, object, method, args);
 			String string = CTypeConversion
-					.toJavaString(fn.getGetStringUTFChars().find(env, call));
+					.toJavaString(fn.getGetStringUTFChars().find(env, call, false));
 			return string;
 		}
 	}
