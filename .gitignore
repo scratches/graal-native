@@ -27,3 +27,4 @@ target/
 /.nb-gradle/
 
 .vscode/
+hs_err_*.log

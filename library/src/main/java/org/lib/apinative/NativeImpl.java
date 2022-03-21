@@ -3,6 +3,7 @@ package org.lib.apinative;
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
+import org.graalvm.nativeimage.c.type.CCharPointer;
 
 public final class NativeImpl {
 	@CEntryPoint(name = "Java_org_pkg_apinative_Native_createIsolate", builtin = CEntryPoint.Builtin.CREATE_ISOLATE)
@@ -38,7 +39,7 @@ public final class NativeImpl {
 
 	@CEntryPoint(name = "Java_org_pkg_apinative_Native_run0")
 	static JObject run(JNIEnvironment env, JClass clazz,
-			@CEntryPoint.IsolateThreadContext long  isolateId, JObject function,
+			@CEntryPoint.IsolateThreadContext long isolateId, JObject function,
 			JObject object) {
 		JNINativeInterface fn = env.getFunctions();
 		try (CTypeConversion.CCharPointerHolder name = CTypeConversion.toCString("apply");
@@ -52,6 +53,14 @@ public final class NativeImpl {
 			JObject result = fn.getCallObjectMethodA().call(env, function, apply, args);
 			return result;
 		}
+	}
+
+	@CEntryPoint(name = "Java_org_pkg_apinative_Native_print0")
+	static void print(JNIEnvironment env, JClass clazz,
+			@CEntryPoint.IsolateThreadContext long isolateId, JObject object) {
+		JNINativeInterface fn = env.getFunctions();
+		System.err.println("Printing: " + CTypeConversion
+				.toJavaString(fn.getGetStringUTFChars().find(env, object, false)));
 	}
 
 	private static String string(JNIEnvironment env, JObject object) {
